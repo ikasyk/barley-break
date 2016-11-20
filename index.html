@@ -8,12 +8,12 @@
 </head>
 <body>
 
-<div id="barley-break-container"></div>
+<div class="battle-field"></div>
 
 <script>
-    var container = document.getElementById("barley-break-container");
+    var container = document.getElementsByClassName("battle-field")[0];
     var barleyBreak = new BarleyBreak(container);
-    barleyBreak.create("image.png", 512, 5);
+    barleyBreak.create("image.png", 512, 4);
 </script>
 
 </body>
