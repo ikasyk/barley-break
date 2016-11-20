@@ -1,0 +1,29 @@
+.barley-break-container .wrap {
+    float: left;
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.barley-break-container .wrap .crop {
+    font-size: 27px;
+    position: absolute;
+    overflow: hidden;
+}
+
+.barley-break-container .results {
+    float: left;
+    margin-left: 25px;
+}
+
+.barley-break-container .results img {
+    width: 150px;
+    height: 150px;
+}
+
+.barley-break-container .results .moves {
+    font-family: Arial, Verdana, Tahoma, "Helvetica Neue";
+    padding: 15px 0;
+    font-size: 18px;
+    text-align: center;
+}
