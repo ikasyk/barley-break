@@ -17,6 +17,7 @@ BarleyBreakModel.prototype = {
                 this.data[i][j] = this.sequence[i * this.parts + j];
             }
         }
+        return this.data;
     },
 
     fromData: function() {
@@ -25,6 +26,7 @@ BarleyBreakModel.prototype = {
                 this.sequence[i * this.parts + j] = this.data[i][j];
             }
         }
+        return this.sequence;
     },
 
     checkWin: function() {
@@ -106,6 +108,7 @@ BarleyBreakView.prototype = {
                 self.wrap.replaceChild(zeroCropClone, target);
 
                 self.controller.exchange({i: zeroRow, j: zeroColumn}, {i: row, j: column});
+                self.controller.save();
 
                 self.movesWrap.innerHTML = self.controller.getMoves();
                 if (self.controller.checkWin()) {
@@ -140,8 +143,21 @@ var BarleyBreakController = function(container) {
 
 BarleyBreakController.prototype = {
     create: function(image, size, parts) {
-        this.model = new BarleyBreakModel([], parts, this);
-        this.model.fillWithRandom().toData();
+        var data = localStorage.getItem("barley-break");
+        if (window.localStorage && data !== null) {
+            try {
+                data = JSON.parse(data);
+                if (data.length === parts * parts)
+                    this.model = new BarleyBreakModel(data, parts, this);
+            } catch (e) {
+                console.log("Local Storage parsing error.");
+            }
+        }
+        if (this.model === undefined) {
+            this.model = new BarleyBreakModel([], parts, this);
+            this.model.fillWithRandom();
+        }
+        this.model.toData();
         this.view.create(image, size, parts);
     },
 
@@ -159,6 +175,12 @@ BarleyBreakController.prototype = {
 
     getDataId: function(ids) {
         return this.model.get(ids);
+    },
+
+    save: function() {
+        if (window.localStorage) {
+            localStorage.setItem("barley-break", JSON.stringify(this.model.fromData()));
+        }
     }
 };
 
