@@ -2,6 +2,13 @@
  * Created by igor on 19.11.16.
  */
 
+/**
+ * Model for game status storage.
+ * @param sequence - list of saved parts.
+ * @param parts - vertical and horizontal field size.
+ * @param controller - object to control actions.
+ * @constructor
+ */
 var BarleyBreakModel = function(sequence, parts, controller) {
     this.sequence = sequence;
     this.parts = parts;
@@ -10,6 +17,8 @@ var BarleyBreakModel = function(sequence, parts, controller) {
 };
 
 BarleyBreakModel.prototype = {
+
+    /** Generates a two-dimensional array from a list. */
     toData: function() {
         for (var i = 0; i < this.parts; i++) {
             this.data[i] = [];
@@ -20,6 +29,7 @@ BarleyBreakModel.prototype = {
         return this.data;
     },
 
+    /** Generates a list from two-dimensional array. */
     fromData: function() {
         for (var i = 0; i < this.parts; i++) {
             for (var j = 0; j < this.parts; j++) {
@@ -29,6 +39,7 @@ BarleyBreakModel.prototype = {
         return this.sequence;
     },
 
+    /** Checks if the sequence of parts is correct. */
     checkWin: function() {
         var firstZero = this.data[0][0] == 0 ? 1 : 0;
         var isWin = true;
@@ -39,6 +50,7 @@ BarleyBreakModel.prototype = {
         return isWin;
     },
 
+    /** Fills the field with a random parts. */
     fillWithRandom: function() {
         var j, x, i;
         this.sequence = [];
@@ -54,24 +66,47 @@ BarleyBreakModel.prototype = {
         return this;
     },
 
+    /**
+     * Exchanges 2 DOM elements.
+     * @param crop - the first element.
+     * @param cropTo - the second element.
+     */
     exchange: function(crop, cropTo) {
         var temp = this.data[crop.i][crop.j];
         this.data[crop.i][crop.j] = this.data[cropTo.i][cropTo.j];
         this.data[cropTo.i][cropTo.j] = temp;
     },
 
+    /**
+     * Finds the part index in data array.
+     * @param ids - pair of keys {i: {Number}, j: {Number}} with element index.
+     * @returns {Array|*} - value of current part.
+     */
     get: function(ids) {
         if (ids.i === undefined || ids.j === undefined) return;
         return this.data && this.data[ids.i] && this.data[ids.i][ids.j];
     }
 };
 
+/**
+ * View for game.
+ * @param container - HTML element with game.
+ * @param controller - object to control axtions.
+ * @constructor
+ */
 var BarleyBreakView = function(container, controller) {
     this.container = container;
     this.controller = controller;
 };
 
 BarleyBreakView.prototype = {
+
+    /**
+     * Creates a game in container.
+     * @param image - URL of image.
+     * @param size - CSS width/height in px.
+     * @param parts - count of parts.
+     */
     create: function(image, size, parts) {
         this.container.classList.add('barley-break-container');
         this.image = image;
@@ -108,7 +143,6 @@ BarleyBreakView.prototype = {
                 self.wrap.replaceChild(zeroCropClone, target);
 
                 self.controller.exchange({i: zeroRow, j: zeroColumn}, {i: row, j: column});
-                self.controller.save();
 
                 self.movesWrap.innerHTML = self.controller.getMoves();
                 if (self.controller.checkWin()) {
@@ -116,8 +150,19 @@ BarleyBreakView.prototype = {
                 }
             }
         }, false);
+
+        window.addEventListener('unload', function() {
+            self.controller.save();
+        }, false);
     },
 
+    /**
+     * Creates a part of field.
+     * @param i - row of field table.
+     * @param j - column of field table.
+     * @param index - value of part.
+     * @returns {Element} - div contains a part of image.
+     */
     createCrop: function(i, j, index) {
         var crop = document.createElement('div'), self = this;
         crop.id = "crop-" + index;
@@ -136,12 +181,24 @@ BarleyBreakView.prototype = {
     }
 };
 
+/**
+ * Controller and main class of game.
+ * @param container - HTML element with game field.
+ * @constructor
+ */
 var BarleyBreakController = function(container) {
     this.view = new BarleyBreakView(container, this);
     this.moves = 0;
 };
 
 BarleyBreakController.prototype = {
+
+    /**
+     * Creates a game and initializes game parameters.
+     * @param image - URL of image.
+     * @param size - CSS width/height in px.
+     * @param parts - count of parts.
+     */
     create: function(image, size, parts) {
         var data = localStorage.getItem("barley-break");
         if (window.localStorage && data !== null) {
@@ -161,18 +218,30 @@ BarleyBreakController.prototype = {
         this.view.create(image, size, parts);
     },
 
+    /** Returns a current move id */
     getMoves: function() {
         return ++this.moves;
     },
 
+    /** Checks if the sequence of parts is correct. */
     checkWin: function() {
         return this.model.checkWin();
     },
 
+    /**
+     * Exchanges 2 DOM elements.
+     * @param crop - the first element.
+     * @param cropTo - the second element.
+     */
     exchange: function(crop, cropTo) {
         return this.model.exchange(crop, cropTo);
     },
 
+    /**
+     * Finds the part index in data array.
+     * @param ids - pair of keys {i: {Number}, j: {Number}} with element index.
+     * @returns {Array|*} - value of current part.
+     */
     getDataId: function(ids) {
         return this.model.get(ids);
     },
